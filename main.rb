@@ -1,6 +1,6 @@
 require 'rspotify'
 require 'byebug'
-require 'config'
+require_relative './config'
 
 def with_progress(string)
   print string
@@ -12,7 +12,11 @@ def progress!
   print '.'
 end
 
-RSpotify.authenticate(CONFIG[:client_id], CONFIG[:cleint_secret])
+begin
+  RSpotify.authenticate(CONFIG[:client_id], CONFIG[:client_secret])
+rescue RestClient::BadRequest
+  puts 'Problem with authenticating with spotify'
+end
 
 playlist = RSpotify::Playlist.find(CONFIG[:user_id], CONFIG[:playlist_uri])
 
