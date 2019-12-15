@@ -39,5 +39,12 @@ tracks.flatten!
 puts 'Collecting artists'
 artists = tracks.map(&:artists).flatten
 
-puts 'Collecting genres'
-# genres = artists.map
+genres = []
+with_progress 'Collecting genres' do
+  artists.each do |artist|
+    genres << artist.genres
+    progress!
+  end
+end
+genres.flatten!
+
