@@ -48,8 +48,8 @@ with_progress 'Collecting genres' do
 end
 genres.flatten!
 
+puts 'Weighting Genres...'
 weighted_genres = {}
-
 genres.each do |genre|
   if weighted_genres.key?(genre)
     weighted_genres[genre] += 1
@@ -60,3 +60,7 @@ end
 
 sorted = weighted_genres.sort_by { |_k, v| v }.reverse
 
+File.open("#{playlist.name}.csv", 'a+') do |f|
+  f.puts("GENRE,FREQUENCY")
+  sorted.each { |genre, frequency| f.puts("#{genre},#{frequency}") }
+end
