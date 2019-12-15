@@ -48,3 +48,15 @@ with_progress 'Collecting genres' do
 end
 genres.flatten!
 
+weighted_genres = {}
+
+genres.each do |genre|
+  if weighted_genres.key?(genre)
+    weighted_genres[genre] += 1
+  else
+    weighted_genres[genre] = 1
+  end
+end
+
+sorted = weighted_genres.sort_by { |_k, v| v }.reverse
+
