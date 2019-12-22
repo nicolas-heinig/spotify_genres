@@ -12,6 +12,10 @@ def progress!
   print '.'
 end
 
+def sample?
+  ARGV[0] == 'sample'
+end
+
 begin
   RSpotify.authenticate(CONFIG[:client_id], CONFIG[:client_secret])
 rescue RestClient::BadRequest
@@ -36,14 +40,32 @@ end
 
 tracks.flatten!
 
-puts 'Collecting artists'
-artists = tracks.map(&:artists).flatten
+artists = nil
+if sample?
+  puts 'Collecting artists'
+  artists_ids = tracks
+    .map(&:artists)
+    .flatten
+    .shuffle
+    .take(50)
+    .map(&:id)
+
+  artists = RSpotify::Artist.find(artists_ids)
+else
+  puts 'Collecting artists'
+  artists = tracks.map(&:artists).flatten
+end
 
 genres = []
 with_progress 'Collecting genres' do
   artists.each do |artist|
     genres << artist.genres
     progress!
+  rescue RestClient::TooManyRequests
+    puts "\n\n"
+    puts 'Too many request loading the genres.'
+    puts 'Try again later or use `rake sample` for long playlists!'
+    abort
   end
 end
 genres.flatten!
@@ -60,7 +82,7 @@ end
 
 sorted = weighted_genres.sort_by { |_k, v| v }.reverse
 
-filename = "#{playlist.name}.csv"
+filename = sample? ? "#{playlist.name} Sample.csv" : "#{playlist.name}.csv"
 
 puts "Writing #{filename}"
 File.open(filename, 'a+') do |f|
